@@ -2218,7 +2218,6 @@
       <li><a href="#about" class="nav-link">About</a></li>
       <li><a href="#metrics" class="nav-link">Dati</a></li>
       <li><a href="#target" class="nav-link">Target</a></li>
-      <li><a href="#trustkiddo" class="nav-link">TrustKiddo</a></li>
       <li><button class="nav-cta nav-cta-shop" onclick="openShop()"><span>Shop</span></button></li>
       <li><button class="nav-cta" onclick="openAgency()"><span>Agency</span></button></li>
     </ul>
@@ -5232,13 +5231,13 @@ var IMG_CAM_NEW4 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAAAAAAD/4gHYSUNDX
      DATA
   ════════════════════════════════════ */
   var DISTRICTS = [
-    {id:'centro',   name:'Centro Storico', score:84, risk:'safe',    cams:8,  crimes:18, prevented:72, alarms:3},
-    {id:'nordest',  name:'Nord Est',       score:78, risk:'safe',    cams:7,  crimes:22, prevented:68, alarms:4},
-    {id:'residenz', name:'Residenziale',   score:92, risk:'safe',    cams:5,  crimes:8,  prevented:81, alarms:1},
-    {id:'ovest',    name:'Ovest',          score:61, risk:'warning', cams:7,  crimes:41, prevented:54, alarms:9},
-    {id:'sud',      name:'Sud',            score:47, risk:'warning', cams:7,  crimes:58, prevented:44, alarms:14},
-    {id:'sudest',   name:'Sud Est',        score:33, risk:'danger',  cams:7,  crimes:79, prevented:31, alarms:21},
-    {id:'portuale', name:'Portuale',       score:28, risk:'danger',  cams:6,  crimes:94, prevented:26, alarms:27},
+    {id:'centro',   name:'Centro Storico', score:84, risk:'safe',    cams:9,  crimes:18, prevented:72, alarms:3},
+    {id:'nordest',  name:'Nord Est',       score:78, risk:'safe',    cams:9,  crimes:22, prevented:68, alarms:4},
+    {id:'residenz', name:'Residenziale',   score:92, risk:'safe',    cams:9,  crimes:8,  prevented:81, alarms:1},
+    {id:'ovest',    name:'Ovest',          score:61, risk:'warning', cams:9,  crimes:41, prevented:54, alarms:9},
+    {id:'sud',      name:'Sud',            score:47, risk:'warning', cams:9,  crimes:58, prevented:44, alarms:14},
+    {id:'sudest',   name:'Sud Est',        score:33, risk:'danger',  cams:9,  crimes:79, prevented:31, alarms:21},
+    {id:'portuale', name:'Portuale',       score:28, risk:'danger',  cams:9,  crimes:94, prevented:26, alarms:27},
   ];
   var DIST_MAP = {};
   DISTRICTS.forEach(function(d){ DIST_MAP[d.id]=d; });
@@ -6486,24 +6485,15 @@ var IMG_CAM_NEW4 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAAAAAAD/4gHYSUNDX
     if(previewAnim){ cancelAnimationFrame(previewAnim); previewAnim=null; }
   };
 
-  /* Map cam IDs to real images */
-  var REAL_CAM_IMGS = {
-    'CAM-CEN-02': IMG_CAM_DUOMO,
-    'CAM-CEN-03': IMG_CAM03,
-    'CAM-NOR-02': IMG_CAM02,
-    'CAM-NOR-04': IMG_CAM04,
-    'CAM-RES-02': IMG_CAM_NEW1,
-    'CAM-OVE-07': IMG_CAM07,
-    'CAM-SUD-02': IMG_CAM_NEW2,
-    'CAM-SUE-02': IMG_CAM_NEW3,
-    'CAM-POR-04': IMG_CAM_NEW4,
-  };
-  var IMG_POOL = [IMG_CAM02, IMG_CAM03, IMG_CAM04, IMG_CAM07, IMG_CAM_DUOMO, IMG_CAM_NEW1, IMG_CAM_NEW2, IMG_CAM_NEW3, IMG_CAM_NEW4];
+  /* 9 unique images, ordered. Each cam slot (01-09) within a node maps
+     deterministically to a unique image, so every node shows all 9 distinct feeds. */
+  var IMG_POOL = [IMG_CAM_DUOMO, IMG_CAM02, IMG_CAM03, IMG_CAM04, IMG_CAM07, IMG_CAM_NEW1, IMG_CAM_NEW2, IMG_CAM_NEW3, IMG_CAM_NEW4];
   function getRealImg(camId){
-    if(REAL_CAM_IMGS[camId]) return REAL_CAM_IMGS[camId];
-    var hash=0;
-    for(var i=0;i<camId.length;i++) hash=(hash*31+camId.charCodeAt(i))&0xffff;
-    return IMG_POOL[hash%IMG_POOL.length];
+    /* Extract trailing 2-digit index (e.g. "CAM-CEN-03" -> 3) */
+    var m = /-(\d{1,2})$/.exec(camId);
+    var idx = m ? (parseInt(m[1],10) - 1) : 0;
+    if(idx < 0) idx = 0;
+    return IMG_POOL[idx % IMG_POOL.length];
   }
 
   function startPreviewFeed(cam, d){
